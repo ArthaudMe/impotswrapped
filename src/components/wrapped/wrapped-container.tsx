@@ -36,8 +36,8 @@ export function WrappedContainer({
 }: WrappedContainerProps) {
   const { t } = useT();
   const breakdown = useMemo(
-    () => computeBreakdown(result.impotNet),
-    [result.impotNet]
+    () => computeBreakdown(result.totalPrelevements),
+    [result.totalPrelevements]
   );
 
   const isNonImposable = result.isNonImposable;
@@ -116,10 +116,10 @@ export function WrappedContainer({
     if (currentSlide === idx++) return <SlideIntro />;
     if (currentSlide === idx++) return <SlideTaxTotal result={result} />;
     if (currentSlide === idx++)
-      return <SlidePercentile revenuNetImposable={input.revenuNetImposable} />;
+      return <SlidePercentile revenuNetImposable={result.revenuNetImposable} />;
     if (currentSlide === idx++) return <SlideDailyCost result={result} />;
     if (currentSlide === idx++)
-      return <SlideBreakdown breakdown={breakdown} totalTax={result.impotNet} />;
+      return <SlideBreakdown breakdown={breakdown} totalTax={result.totalPrelevements} />;
 
     // 6 category slides — use special debt interest slide for "dette"
     const catStart = idx;

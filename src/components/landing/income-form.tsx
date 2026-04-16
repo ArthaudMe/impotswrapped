@@ -33,7 +33,7 @@ const fadeUp = {
 export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
   const { t, locale } = useT();
   const [revenu, setRevenu] = useState(
-    initialValues?.revenuNetImposable?.toString() ?? ""
+    initialValues?.salaireBrut?.toString() ?? ""
   );
   const [situation, setSituation] = useState<SituationFamiliale>(
     initialValues?.situation ?? "celibataire"
@@ -58,7 +58,7 @@ export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
       e.preventDefault();
       const amount = Number(revenu);
       if (isNaN(amount) || amount < 0) return;
-      onSubmit({ revenuNetImposable: amount, situation, enfants });
+      onSubmit({ salaireBrut: amount, situation, enfants });
     },
     [revenu, situation, enfants, onSubmit]
   );
@@ -86,7 +86,7 @@ export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
             inputMode="numeric"
             value={formatRevenuDisplay(revenu)}
             onChange={handleRevenuChange}
-            placeholder="30 000"
+            placeholder="35 000"
             className="mono-number w-full border-0 bg-transparent text-[28px] font-bold text-text-primary outline-none placeholder:text-text-muted/30"
             required
           />

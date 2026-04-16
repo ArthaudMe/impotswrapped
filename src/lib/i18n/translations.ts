@@ -9,8 +9,8 @@ const translations = {
   "privacy": { fr: "100% prive — rien ne quitte votre appareil", en: "100% private — nothing leaves your device" },
   "form.title": { fr: "Vos informations", en: "Your information" },
   "form.subtitle": { fr: "Tout reste sur votre appareil.", en: "Everything stays on your device." },
-  "form.income.label": { fr: "Revenu net imposable", en: "Net taxable income" },
-  "form.income.hint": { fr: "Case 1AJ de votre declaration", en: "Box 1AJ of your tax return" },
+  "form.income.label": { fr: "Salaire brut annuel", en: "Annual gross salary" },
+  "form.income.hint": { fr: "Avant cotisations et impots", en: "Before contributions and taxes" },
   "form.situation": { fr: "Situation", en: "Status" },
   "form.single": { fr: "Celibataire", en: "Single" },
   "form.couple": { fr: "Couple", en: "Couple" },
@@ -25,7 +25,10 @@ const translations = {
 
   // Tax total slide
   "tax.in2025": { fr: "En 2025, vous avez paye", en: "In 2025, you paid" },
-  "tax.incomeTax": { fr: "d'impot sur le revenu", en: "in income tax" },
+  "tax.totalContributions": { fr: "de prelevements obligatoires", en: "in mandatory contributions" },
+  "tax.cotisations": { fr: "Cotisations salariales", en: "Payroll contributions" },
+  "tax.csgCrds": { fr: "CSG + CRDS", en: "CSG + CRDS" },
+  "tax.ir": { fr: "Impot sur le revenu", en: "Income tax" },
   "tax.effectiveRate": { fr: "taux effectif", en: "effective rate" },
 
   // Percentile slide
@@ -36,7 +39,7 @@ const translations = {
 
   // Daily cost slide
   "daily.everyDay": { fr: "Chaque jour, vous contribuez", en: "Every day, you contribute" },
-  "daily.toCountry": { fr: "au fonctionnement du pays", en: "to running the country" },
+  "daily.toCountry": { fr: "en prelevements obligatoires", en: "in mandatory contributions" },
   "daily.perMonth": { fr: "par mois", en: "per month" },
   "daily.thatsAlso": { fr: "Soit", en: "That's" },
 
@@ -47,7 +50,7 @@ const translations = {
   // Category slide
   "category.investment": { fr: "Investissement", en: "Investment" },
   "category.expense": { fr: "Depense", en: "Expense" },
-  "category.ofYourTaxes": { fr: "de vos impots", en: "of your taxes" },
+  "category.ofYourTaxes": { fr: "de vos prelevements", en: "of your contributions" },
   "category.thatsAlso": { fr: "Soit", en: "That's" },
 
   // Dette interest slide

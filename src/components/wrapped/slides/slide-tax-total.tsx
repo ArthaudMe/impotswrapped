@@ -27,7 +27,7 @@ export function SlideTaxTotal({ result }: Props) {
 
       <div className="my-3">
         <AnimatedCounter
-          value={result.impotNet}
+          value={result.totalPrelevements}
           duration={2.5}
           format={(n) => formatEuro(n)}
           className="text-[36px] font-bold tracking-[-1px] text-text-primary"
@@ -40,14 +40,40 @@ export function SlideTaxTotal({ result }: Props) {
         transition={{ delay: 1.5 }}
         className="text-[12.5px] font-medium text-text-secondary"
       >
-        {t("tax.incomeTax")}
+        {t("tax.totalContributions")}
       </motion.p>
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2 }}
-        className="mt-8 flex items-center gap-6"
+        className="mt-6 w-full max-w-[260px] space-y-1.5"
+      >
+        {[
+          { label: t("tax.cotisations"), value: result.cotisationsSalariales },
+          { label: t("tax.csgCrds"), value: result.csg + result.crds },
+          { label: t("tax.ir"), value: result.impotNet },
+        ].map((item, i) => (
+          <motion.div
+            key={item.label}
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 2.2 + i * 0.12 }}
+            className="flex items-center justify-between text-[11px]"
+          >
+            <span className="text-text-muted">{item.label}</span>
+            <span className="mono-number font-semibold text-text-secondary">
+              {formatEuro(item.value)}
+            </span>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.8 }}
+        className="mt-5 flex items-center gap-6"
       >
         <div className="text-center">
           <p className="mono-number text-[20px] font-bold tracking-[-0.5px] text-text-primary">

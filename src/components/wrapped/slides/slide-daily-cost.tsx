@@ -15,7 +15,7 @@ interface Props {
 export function SlideDailyCost({ result }: Props) {
   const { t } = useT();
   const daily = result.coutJournalier;
-  const monthly = result.impotNet / 12;
+  const monthly = result.totalPrelevements / 12;
 
   return (
     <SlideLayout gradient={SLIDE_THEMES["daily-cost"].background}>

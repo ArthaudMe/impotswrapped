@@ -7,22 +7,35 @@ import {
   computePartsFiscales,
   type SituationFamiliale,
 } from "./quotient-familial";
+import { computeCotisations } from "./cotisations";
 
 export interface TaxInput {
-  revenuNetImposable: number;
+  salaireBrut: number;
   situation: SituationFamiliale;
   enfants: number;
 }
 
 export interface TaxResult {
+  // Cotisations
+  salaireBrut: number;
+  cotisationsSalariales: number;
+  csg: number;
+  crds: number;
+  revenuNetImposable: number;
+  salaireNet: number;
+
+  // IR
   impotBrut: number;
   impotNet: number;
+  decoteApplied: number;
+  plafonnementApplied: boolean;
+
+  // Totals
+  totalPrelevements: number;
   tauxEffectif: number;
   partsFiscales: number;
   isNonImposable: boolean;
   coutJournalier: number;
-  decoteApplied: number;
-  plafonnementApplied: boolean;
 }
 
 /** Calculate tax on income per single part (quotient) */
@@ -38,34 +51,43 @@ function computeTaxPerPart(quotient: number): number {
 }
 
 export function calculateTax(input: TaxInput): TaxResult {
-  const { revenuNetImposable, situation, enfants } = input;
+  const { salaireBrut, situation, enfants } = input;
+  const parts = computePartsFiscales(situation, enfants);
 
-  if (revenuNetImposable <= 0) {
+  if (salaireBrut <= 0) {
     return {
+      salaireBrut: 0,
+      cotisationsSalariales: 0,
+      csg: 0,
+      crds: 0,
+      revenuNetImposable: 0,
+      salaireNet: 0,
       impotBrut: 0,
       impotNet: 0,
-      tauxEffectif: 0,
-      partsFiscales: computePartsFiscales(situation, enfants),
-      isNonImposable: true,
-      coutJournalier: 0,
       decoteApplied: 0,
       plafonnementApplied: false,
+      totalPrelevements: 0,
+      tauxEffectif: 0,
+      partsFiscales: parts,
+      isNonImposable: true,
+      coutJournalier: 0,
     };
   }
 
-  const parts = computePartsFiscales(situation, enfants);
-  const baseParts = situation === "couple" ? 2 : 1;
-  const additionalHalfParts = (parts - baseParts) * 2; // number of half-parts
+  // Step 1: Compute cotisations, CSG, CRDS, derive revenu net imposable
+  const cotis = computeCotisations(salaireBrut);
 
-  // Tax with all parts (quotient familial)
+  // Step 2: Compute IR on revenu net imposable
+  const { revenuNetImposable } = cotis;
+  const baseParts = situation === "couple" ? 2 : 1;
+  const additionalHalfParts = (parts - baseParts) * 2;
+
   const quotient = revenuNetImposable / parts;
   const taxWithParts = computeTaxPerPart(quotient) * parts;
 
-  // Tax with base parts only (for plafonnement)
   const baseQuotient = revenuNetImposable / baseParts;
   const taxWithBaseParts = computeTaxPerPart(baseQuotient) * baseParts;
 
-  // Plafonnement: the benefit of additional half-parts is capped
   const maxBenefit = additionalHalfParts * PLAFONNEMENT_PER_HALF_PART;
   const actualBenefit = taxWithBaseParts - taxWithParts;
   const plafonnementApplied = actualBenefit > maxBenefit;
@@ -75,7 +97,6 @@ export function calculateTax(input: TaxInput): TaxResult {
 
   impotBrut = Math.max(0, impotBrut);
 
-  // Decote
   const decoteConfig =
     situation === "couple" ? DECOTE.couple : DECOTE.single;
   let decoteApplied = 0;
@@ -85,19 +106,31 @@ export function calculateTax(input: TaxInput): TaxResult {
   }
 
   const impotNet = Math.max(0, Math.round(impotBrut - decoteApplied));
+
+  // Step 3: Total prelevements = cotisations + CSG + CRDS + IR
+  const totalPrelevements =
+    cotis.cotisationsSalariales + cotis.csg + cotis.crds + impotNet;
+
   const tauxEffectif =
-    revenuNetImposable > 0 ? impotNet / revenuNetImposable : 0;
-  const isNonImposable = impotNet === 0;
-  const coutJournalier = impotNet / 365;
+    salaireBrut > 0 ? totalPrelevements / salaireBrut : 0;
+  const isNonImposable = salaireBrut <= 0;
+  const coutJournalier = totalPrelevements / 365;
 
   return {
+    salaireBrut,
+    cotisationsSalariales: cotis.cotisationsSalariales,
+    csg: cotis.csg,
+    crds: cotis.crds,
+    revenuNetImposable: cotis.revenuNetImposable,
+    salaireNet: cotis.salaireNet,
     impotBrut: Math.round(impotBrut),
     impotNet,
+    decoteApplied: Math.round(decoteApplied),
+    plafonnementApplied,
+    totalPrelevements,
     tauxEffectif,
     partsFiscales: parts,
     isNonImposable,
     coutJournalier,
-    decoteApplied: Math.round(decoteApplied),
-    plafonnementApplied,
   };
 }

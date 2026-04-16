@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const input = decodeParams(encoded);
     if (input) {
       const result = calculateTax(input);
-      taxAmount = result.impotNet.toLocaleString("fr-FR") + " \u20ac";
+      taxAmount = result.totalPrelevements.toLocaleString("fr-FR") + " \u20ac";
       tauxEffectif = (result.tauxEffectif * 100).toFixed(1) + "%";
     }
   }

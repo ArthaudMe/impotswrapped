@@ -1,25 +1,25 @@
 import type { TaxInput } from "../tax/calculator";
 
 export function encodeParams(input: TaxInput): string {
-  const data = `${input.revenuNetImposable}|${input.situation}|${input.enfants}`;
+  const data = `${input.salaireBrut}|${input.situation}|${input.enfants}`;
   return btoa(data);
 }
 
 export function decodeParams(encoded: string): TaxInput | null {
   try {
     const data = atob(encoded);
-    const [revenuStr, situation, enfantsStr] = data.split("|");
-    const revenu = Number(revenuStr);
+    const [brutStr, situation, enfantsStr] = data.split("|");
+    const brut = Number(brutStr);
     const enfants = Number(enfantsStr);
     if (
-      isNaN(revenu) ||
+      isNaN(brut) ||
       isNaN(enfants) ||
       (situation !== "celibataire" && situation !== "couple")
     ) {
       return null;
     }
     return {
-      revenuNetImposable: revenu,
+      salaireBrut: brut,
       situation,
       enfants,
     };

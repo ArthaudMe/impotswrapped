@@ -26,9 +26,9 @@ export function SlideFinale({ result, breakdown, onShare, onReset }: Props) {
     .filter((b) => b.category.nature === "depense")
     .reduce((sum, b) => sum + b.amount, 0);
   const investPct =
-    result.impotNet > 0 ? totalInvestissement / result.impotNet : 0;
+    result.totalPrelevements > 0 ? totalInvestissement / result.totalPrelevements : 0;
   const depensePct =
-    result.impotNet > 0 ? totalDepense / result.impotNet : 0;
+    result.totalPrelevements > 0 ? totalDepense / result.totalPrelevements : 0;
 
   return (
     <SlideLayout gradient={SLIDE_THEMES.finale.background}>
@@ -49,7 +49,7 @@ export function SlideFinale({ result, breakdown, onShare, onReset }: Props) {
         className="mt-3"
       >
         <p className="mono-number text-[24px] font-bold tracking-[-0.5px] text-text-primary">
-          {formatEuro(result.impotNet)}
+          {formatEuro(result.totalPrelevements)}
         </p>
         <p className="mt-0.5 text-[11px] text-text-muted">
           {t("finale.effectiveRate")}{" "}
