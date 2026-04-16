@@ -27,7 +27,7 @@ const translations = {
   "tax.in2025": { fr: "En 2025, vous avez paye", en: "In 2025, you paid" },
   "tax.totalContributions": { fr: "de prelevements obligatoires", en: "in mandatory contributions" },
   "tax.cotisations": { fr: "Cotisations salariales", en: "Payroll contributions" },
-  "tax.csgCrds": { fr: "CSG + CRDS", en: "CSG + CRDS" },
+  "tax.csgCrds": { fr: "CSG + CRDS", en: "Social contributions (CSG + CRDS)" },
   "tax.ir": { fr: "Impot sur le revenu", en: "Income tax" },
   "tax.effectiveRate": { fr: "taux effectif", en: "effective rate" },
 
