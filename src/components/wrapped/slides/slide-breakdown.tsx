@@ -6,6 +6,7 @@ import { BarChart } from "../shared/bar-chart";
 import { SLIDE_THEMES } from "@/styles/slide-themes";
 import { formatEuro } from "@/lib/utils";
 import type { CategoryBreakdown } from "@/lib/budget/compute-breakdown";
+import { useT } from "@/lib/i18n/context";
 
 interface Props {
   breakdown: CategoryBreakdown[];
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function SlideBreakdown({ breakdown, totalTax }: Props) {
+  const { t } = useT();
   return (
     <SlideLayout gradient={SLIDE_THEMES.breakdown.background}>
       <motion.p
@@ -21,11 +23,11 @@ export function SlideBreakdown({ breakdown, totalTax }: Props) {
         transition={{ delay: 0.2 }}
         className="mb-5 text-[12.5px] text-text-muted"
       >
-        Ou vont vos{" "}
+        {t("breakdown.whereGo")}{" "}
         <span className="mono-number font-semibold text-text-primary">
           {formatEuro(totalTax)}
         </span>{" "}
-        ?
+        {t("breakdown.questionMark")}
       </motion.p>
 
       <BarChart data={breakdown} className="w-full max-w-[280px]" />

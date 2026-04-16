@@ -9,12 +9,15 @@ import {
   getComparisonForCategory,
   computeComparison,
 } from "@/lib/budget/comparisons";
+import { useT } from "@/lib/i18n/context";
+import { getCompTranslation } from "@/lib/i18n/translations";
 
 interface Props {
   breakdown: CategoryBreakdown[];
 }
 
 export function SlideComparison({ breakdown }: Props) {
+  const { t, locale } = useT();
   const items = breakdown
     .map((b) => {
       const comp = getComparisonForCategory(b.category.id);
@@ -34,7 +37,7 @@ export function SlideComparison({ breakdown }: Props) {
         transition={{ delay: 0.15 }}
         className="mb-5 text-[16px] font-bold tracking-tight text-text-primary"
       >
-        Vos impots, c&apos;est aussi...
+        {t("comparison.title")}
       </motion.h2>
 
       <div className="w-full max-w-[260px] space-y-2">
@@ -53,7 +56,7 @@ export function SlideComparison({ breakdown }: Props) {
                   <span className="mono-number font-bold text-text-primary">
                     {formatNumber(item.count)}
                   </span>{" "}
-                  {item.item}
+                  {getCompTranslation(item.categoryId, locale) || item.item}
                 </p>
               </motion.div>
             )

@@ -8,12 +8,14 @@ import {
   getPercentileLabel,
 } from "@/lib/tax/percentiles";
 import { formatNumber } from "@/lib/utils";
+import { useT } from "@/lib/i18n/context";
 
 interface Props {
   revenuNetImposable: number;
 }
 
 export function SlidePercentile({ revenuNetImposable }: Props) {
+  const { t } = useT();
   const percentile = getIncomePercentile(revenuNetImposable);
   const topPercent = Math.max(0.1, 100 - percentile);
   const label = getPercentileLabel(percentile);
@@ -33,7 +35,7 @@ export function SlidePercentile({ revenuNetImposable }: Props) {
         transition={{ delay: 0.2 }}
         className="text-[12.5px] text-text-muted"
       >
-        Parmi les contribuables francais
+        {t("percentile.among")}
       </motion.p>
 
       <motion.div
@@ -53,11 +55,11 @@ export function SlidePercentile({ revenuNetImposable }: Props) {
         transition={{ delay: 0.9 }}
         className="text-[12.5px] text-text-secondary"
       >
-        Vous gagnez plus que{" "}
+        {t("percentile.youEarnMore")}{" "}
         <span className="mono-number font-bold text-text-primary">
           {formatNumber(Math.round(percentile))}%
         </span>{" "}
-        des foyers fiscaux
+        {t("percentile.ofHouseholds")}
       </motion.p>
 
       {/* Population bar visualization */}
@@ -102,8 +104,8 @@ export function SlidePercentile({ revenuNetImposable }: Props) {
         <span className="text-[9px] text-text-muted">0%</span>
         <span className="text-[9px] text-text-muted">
           {topPercent < 1
-            ? `Vous (top ${topPercent.toFixed(1)}%)`
-            : `Vous (top ${Math.round(topPercent)}%)`}
+            ? `${t("percentile.you")} (top ${topPercent.toFixed(1)}%)`
+            : `${t("percentile.you")} (top ${Math.round(topPercent)}%)`}
         </span>
         <span className="text-[9px] text-text-muted">100%</span>
       </motion.div>

@@ -6,12 +6,14 @@ import { AnimatedCounter } from "../shared/animated-counter";
 import { SLIDE_THEMES } from "@/styles/slide-themes";
 import { formatEuro } from "@/lib/utils";
 import type { TaxResult } from "@/lib/tax/calculator";
+import { useT } from "@/lib/i18n/context";
 
 interface Props {
   result: TaxResult;
 }
 
 export function SlideDailyCost({ result }: Props) {
+  const { t } = useT();
   const daily = result.coutJournalier;
   const monthly = result.impotNet / 12;
 
@@ -23,7 +25,7 @@ export function SlideDailyCost({ result }: Props) {
         transition={{ delay: 0.2 }}
         className="text-[12.5px] text-text-muted"
       >
-        Chaque jour, vous contribuez
+        {t("daily.everyDay")}
       </motion.p>
 
       <div className="my-3">
@@ -41,7 +43,7 @@ export function SlideDailyCost({ result }: Props) {
         transition={{ delay: 1.5 }}
         className="text-[12.5px] font-medium text-text-secondary"
       >
-        au fonctionnement du pays
+        {t("daily.toCountry")}
       </motion.p>
 
       <motion.div
@@ -51,11 +53,11 @@ export function SlideDailyCost({ result }: Props) {
         className="glass-card mt-8 px-5 py-3"
       >
         <p className="text-[12.5px] text-text-secondary">
-          Soit{" "}
+          {t("daily.thatsAlso")}{" "}
           <span className="mono-number font-bold text-text-primary">
             {formatEuro(monthly, 0)}
           </span>{" "}
-          par mois
+          {t("daily.perMonth")}
         </p>
       </motion.div>
     </SlideLayout>

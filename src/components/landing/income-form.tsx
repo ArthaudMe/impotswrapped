@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ShimmerText } from "@/components/shared/shimmer-text";
+import { useT } from "@/lib/i18n/context";
 import {
   computePartsFiscales,
   type SituationFamiliale,
@@ -30,6 +31,7 @@ const fadeUp = {
 };
 
 export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
+  const { t, locale } = useT();
   const [revenu, setRevenu] = useState(
     initialValues?.revenuNetImposable?.toString() ?? ""
   );
@@ -43,7 +45,7 @@ export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
   const formatRevenuDisplay = (val: string) => {
     const num = val.replace(/\D/g, "");
     if (!num) return "";
-    return Number(num).toLocaleString("fr-FR");
+    return Number(num).toLocaleString(locale === "fr" ? "fr-FR" : "en-US");
   };
 
   const handleRevenuChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,7 +77,7 @@ export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
           htmlFor="revenu"
           className="block text-[10px] font-semibold uppercase tracking-wider text-text-muted"
         >
-          Revenu net imposable
+          {t("form.income.label")}
         </label>
         <div className="mt-2 flex items-baseline gap-1">
           <input
@@ -93,14 +95,14 @@ export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
           </span>
         </div>
         <p className="mt-2 text-[10px] text-text-muted">
-          Case 1AJ de votre declaration
+          {t("form.income.hint")}
         </p>
       </motion.div>
 
       {/* Situation toggle */}
       <motion.div variants={fadeUp} className="space-y-2">
         <span className="block text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-          Situation
+          {t("form.situation")}
         </span>
         <div className="inline-flex rounded-[20px] border border-border-subtle p-0.5">
           {(["celibataire", "couple"] as const).map((s) => (
@@ -114,7 +116,7 @@ export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
                   : "text-text-muted hover:text-text-secondary"
               }`}
             >
-              {s === "celibataire" ? "Celibataire" : "Couple"}
+              {s === "celibataire" ? t("form.single") : t("form.couple")}
             </button>
           ))}
         </div>
@@ -123,7 +125,7 @@ export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
       {/* Children stepper */}
       <motion.div variants={fadeUp} className="space-y-2">
         <span className="block text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-          Enfants a charge
+          {t("form.children")}
         </span>
         <div className="flex items-center gap-3">
           <button
@@ -157,7 +159,7 @@ export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
             animate={{ opacity: 1, x: 0 }}
             className="ml-auto inline-flex items-center gap-1 rounded-full border border-border-subtle px-2.5 py-0.5 text-[10px] font-semibold text-text-muted"
           >
-            {parts} {parts > 1 ? "parts" : "part"}
+            {parts} {parts > 1 ? t("form.parts") : t("form.part")}
           </motion.span>
         </div>
       </motion.div>
@@ -168,7 +170,10 @@ export function IncomeForm({ onSubmit, initialValues }: IncomeFormProps) {
           type="submit"
           className="h-11 w-full rounded-[10px] text-[13px] font-semibold"
         >
-          Voir mon <ShimmerText className="from-white via-[#0a84ff] to-white">Impots Wrapped</ShimmerText>
+          {t("form.submit")}{" "}
+          <ShimmerText className="from-white via-[#0a84ff] to-white">
+            Impots Wrapped
+          </ShimmerText>
         </Button>
       </motion.div>
     </motion.form>

@@ -4,8 +4,10 @@ import { motion } from "framer-motion";
 import { SlideLayout } from "../shared/slide-layout";
 import { ShimmerText } from "@/components/shared/shimmer-text";
 import { SLIDE_THEMES } from "@/styles/slide-themes";
+import { useT } from "@/lib/i18n/context";
 
 export function SlideIntro() {
+  const { t } = useT();
   return (
     <SlideLayout gradient={SLIDE_THEMES.intro.background}>
       <motion.div
@@ -44,7 +46,7 @@ export function SlideIntro() {
           transition={{ delay: 0.35, duration: 0.6, ease: "easeOut" }}
           className="text-[28px] font-bold leading-tight tracking-[-0.5px] text-text-primary"
         >
-          Votre
+          {t("intro.your")}
           <br />
           <ShimmerText>Impots Wrapped</ShimmerText>
         </motion.h1>

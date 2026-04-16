@@ -6,6 +6,7 @@ import { useSwipe } from "@/lib/hooks/use-swipe";
 import { useKeyboardNav } from "@/lib/hooks/use-keyboard-nav";
 import { computeBreakdown } from "@/lib/budget/compute-breakdown";
 import { encodeParams } from "@/lib/share/encode-params";
+import { useT } from "@/lib/i18n/context";
 import { ProgressBar } from "./progress-bar";
 import { SlideRenderer } from "./slide-renderer";
 import { SlideIntro } from "./slides/slide-intro";
@@ -33,6 +34,7 @@ export function WrappedContainer({
   input,
   onReset,
 }: WrappedContainerProps) {
+  const { t } = useT();
   const breakdown = useMemo(
     () => computeBreakdown(result.impotNet),
     [result.impotNet]
@@ -71,8 +73,8 @@ export function WrappedContainer({
     const encoded = encodeParams(input);
     const url = `${window.location.origin}?r=${encoded}`;
     const shareData = {
-      title: "Mon Impots Wrapped 2025",
-      text: `Decouvrez ou vont mes impots ! Taux effectif : ${(result.tauxEffectif * 100).toFixed(1)}%`,
+      title: t("share.title"),
+      text: `${t("share.text")} ${(result.tauxEffectif * 100).toFixed(1)}%`,
       url,
     };
 
@@ -85,7 +87,7 @@ export function WrappedContainer({
     } else {
       await navigator.clipboard.writeText(url);
     }
-  }, [input, result.tauxEffectif]);
+  }, [input, result.tauxEffectif, t]);
 
   const handleTapNav = useCallback(
     (e: React.MouseEvent) => {

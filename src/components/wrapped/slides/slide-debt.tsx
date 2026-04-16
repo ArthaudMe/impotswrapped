@@ -6,57 +6,56 @@ import { SlideLayout } from "../shared/slide-layout";
 import { AnimatedCounter } from "../shared/animated-counter";
 import { formatNumber } from "@/lib/utils";
 import { DETTE_PUBLIQUE } from "@/lib/budget/france-fiscal";
+import { useT } from "@/lib/i18n/context";
 
 function LiveDebtCounter() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true });
-  const [debt, setDebt] = useState<number>(DETTE_PUBLIQUE.total);
-  const startRef = useRef<number | null>(null);
-  const countUpDone = useRef(false);
-  const [countUpValue, setCountUpValue] = useState(0);
+  const [displayValue, setDisplayValue] = useState(0);
 
-  // Phase 1: count-up animation from 0 to total (3 seconds)
+  // Phase 1: count-up from 0 to total (3s), then Phase 2: tick per second
   useEffect(() => {
     if (!isInView) return;
 
-    const duration = 3; // seconds
+    const duration = 3;
     const startTime = performance.now();
-    startRef.current = startTime;
+    let cancelled = false;
 
     function animate(currentTime: number) {
+      if (cancelled) return;
       const elapsed = (currentTime - startTime) / 1000;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setCountUpValue(DETTE_PUBLIQUE.total * eased);
+      setDisplayValue(DETTE_PUBLIQUE.total * eased);
 
       if (progress < 1) {
         requestAnimationFrame(animate);
-      } else {
-        countUpDone.current = true;
-        setDebt(DETTE_PUBLIQUE.total);
       }
     }
 
     requestAnimationFrame(animate);
-  }, [isInView]);
 
-  // Phase 2: once count-up finishes, tick up every second
-  useEffect(() => {
-    if (!isInView) return;
-
-    // Start ticking after the count-up duration
+    // After count-up finishes, tick every second
     const tickDelay = setTimeout(() => {
+      if (cancelled) return;
+      let current = DETTE_PUBLIQUE.total;
       const interval = setInterval(() => {
-        setDebt((prev) => prev + DETTE_PUBLIQUE.deficitPerSecond);
+        current += DETTE_PUBLIQUE.deficitPerSecond;
+        setDisplayValue(current);
       }, 1000);
 
-      return () => clearInterval(interval);
-    }, 3000);
+      // Store cleanup in the outer scope
+      cleanupInterval = () => clearInterval(interval);
+    }, duration * 1000);
 
-    return () => clearTimeout(tickDelay);
+    let cleanupInterval: (() => void) | undefined;
+
+    return () => {
+      cancelled = true;
+      clearTimeout(tickDelay);
+      cleanupInterval?.();
+    };
   }, [isInView]);
-
-  const displayValue = countUpDone.current ? debt : countUpValue;
 
   return (
     <div ref={ref}>
@@ -66,13 +65,14 @@ function LiveDebtCounter() {
         transition={{ duration: 0.4 }}
         className="mono-number text-[16px] font-bold tracking-[-0.5px] text-text-primary"
       >
-        {formatNumber(Math.round(displayValue), 0)} €
+        {formatNumber(Math.round(displayValue), 0)} &euro;
       </motion.span>
     </div>
   );
 }
 
 export function SlideDebt() {
+  const { t } = useT();
   return (
     <SlideLayout gradient="from-[#0c0c0f] via-[#111115] to-[#0c0c0f]">
       <motion.h2
@@ -81,7 +81,7 @@ export function SlideDebt() {
         transition={{ delay: 0.2 }}
         className="text-[20px] font-bold tracking-tight text-text-primary"
       >
-        Ce deficit ?
+        {t("debt.thisDeficit")}
       </motion.h2>
 
       <motion.p
@@ -90,7 +90,7 @@ export function SlideDebt() {
         transition={{ delay: 0.5 }}
         className="mt-1 max-w-[240px] text-[11px] text-text-muted"
       >
-        Il s&apos;ajoute a la dette nationale, qui s&apos;accumule depuis{" "}
+        {t("debt.itAddsUp")}{" "}
         {DETTE_PUBLIQUE.depuisAnnee}.
       </motion.p>
 
@@ -104,7 +104,7 @@ export function SlideDebt() {
           <LiveDebtCounter />
         </div>
         <p className="mt-1 text-[10px] text-text-muted">
-          La dette publique{" "}
+          {t("debt.nationalDebt")}{" "}
           <span className="text-text-muted/60">
             (+{formatNumber(DETTE_PUBLIQUE.deficitPerSecond, 0)} €/s)
           </span>
@@ -125,7 +125,7 @@ export function SlideDebt() {
             className="text-[28px] font-bold tracking-[-1px] text-text-primary"
           />
         </div>
-        <p className="mt-1 text-[10px] text-text-muted">par habitant</p>
+        <p className="mt-1 text-[10px] text-text-muted">{t("debt.perCapita")}</p>
       </motion.div>
 
       <motion.p
@@ -134,7 +134,7 @@ export function SlideDebt() {
         transition={{ delay: 3 }}
         className="mt-4 text-[10px] text-text-muted"
       >
-        {DETTE_PUBLIQUE.enPctPIB}% du PIB
+        {DETTE_PUBLIQUE.enPctPIB}% {t("debt.ofGDP")}
       </motion.p>
     </SlideLayout>
   );

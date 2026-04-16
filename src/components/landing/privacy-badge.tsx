@@ -1,8 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useT } from "@/lib/i18n/context";
 
 export function PrivacyBadge() {
+  const { t } = useT();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -24,7 +27,7 @@ export function PrivacyBadge() {
         />
       </svg>
       <span className="text-[10px] font-medium text-text-muted">
-        100% prive — rien ne quitte votre appareil
+        {t("privacy")}
       </span>
     </motion.div>
   );

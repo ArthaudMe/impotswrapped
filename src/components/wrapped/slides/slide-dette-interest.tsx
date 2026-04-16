@@ -6,15 +6,16 @@ import { AnimatedCounter } from "../shared/animated-counter";
 import { SLIDE_THEMES } from "@/styles/slide-themes";
 import { formatEuro } from "@/lib/utils";
 import type { CategoryBreakdown } from "@/lib/budget/compute-breakdown";
+import { useT } from "@/lib/i18n/context";
 
 interface Props {
   breakdown: CategoryBreakdown[];
   detteAmount: number;
 }
 
-const strikeWords = ["Ni routes.", "Ni ecoles.", "Ni defense."];
-
 export function SlideDetteInterest({ detteAmount }: Props) {
+  const { t } = useT();
+  const strikeWords = [t("dette.noRoads"), t("dette.noSchools"), t("dette.noDefense")];
   return (
     <SlideLayout gradient={SLIDE_THEMES.dette.background}>
       <motion.span
@@ -38,7 +39,7 @@ export function SlideDetteInterest({ detteAmount }: Props) {
         transition={{ delay: 0.3 }}
         className="mt-2 text-[12.5px] text-text-muted"
       >
-        Vous avez contribue
+        {t("dette.youContributed")}
       </motion.p>
 
       <div className="my-3">
@@ -56,7 +57,7 @@ export function SlideDetteInterest({ detteAmount }: Props) {
         transition={{ delay: 1.5 }}
         className="text-[14px] font-semibold text-text-primary"
       >
-        aux interets de la dette.
+        {t("dette.toInterest")}
       </motion.p>
 
       <motion.div
@@ -84,7 +85,7 @@ export function SlideDetteInterest({ detteAmount }: Props) {
             transition={{ delay: 3.2, type: "spring" }}
             className="font-bold text-[#ff453a]"
           >
-            Juste des interets.
+            {t("dette.justInterest")}
           </motion.span>
         </p>
         <motion.p
@@ -93,8 +94,7 @@ export function SlideDetteInterest({ detteAmount }: Props) {
           transition={{ delay: 3.8 }}
           className="text-[11px] text-text-muted"
         >
-          Les interets ne financent rien. C&apos;est le prix de l&apos;argent
-          emprunte par l&apos;Etat.
+          {t("dette.explanation")}
         </motion.p>
       </motion.div>
     </SlideLayout>

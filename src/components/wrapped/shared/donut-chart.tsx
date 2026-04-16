@@ -22,7 +22,14 @@ export function DonutChart({
   const circumference = 2 * Math.PI * radius;
   const center = size / 2;
 
-  let cumulativePercent = 0;
+  const segments = data.reduce<{ item: CategoryBreakdown; cumulativePercent: number }[]>(
+    (acc, item) => {
+      const prev = acc.length > 0 ? acc[acc.length - 1].cumulativePercent + acc[acc.length - 1].item.percentage / 100 : 0;
+      acc.push({ item, cumulativePercent: prev });
+      return acc;
+    },
+    []
+  );
 
   return (
     <div className={className}>
@@ -32,11 +39,10 @@ export function DonutChart({
         viewBox={`0 0 ${size} ${size}`}
         className="mx-auto"
       >
-        {data.map((item, index) => {
+        {segments.map(({ item, cumulativePercent }, index) => {
           const percent = item.percentage / 100;
           const strokeDasharray = `${circumference * percent} ${circumference * (1 - percent)}`;
           const rotation = cumulativePercent * 360 - 90;
-          cumulativePercent += percent;
 
           return (
             <motion.circle

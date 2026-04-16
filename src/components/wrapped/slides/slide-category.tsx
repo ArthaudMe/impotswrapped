@@ -10,12 +10,15 @@ import {
   getComparisonForCategory,
   computeComparison,
 } from "@/lib/budget/comparisons";
+import { useT } from "@/lib/i18n/context";
+import { getCatTranslation, getCompTranslation } from "@/lib/i18n/translations";
 
 interface Props {
   item: CategoryBreakdown;
 }
 
 export function SlideCategory({ item }: Props) {
+  const { t, locale } = useT();
   const theme = SLIDE_THEMES[item.category.id] || SLIDE_THEMES.breakdown;
   const comparison = getComparisonForCategory(item.category.id);
   const comparisonCount = comparison
@@ -23,8 +26,12 @@ export function SlideCategory({ item }: Props) {
     : 0;
 
   const isInvestissement = item.category.nature === "investissement";
-  const natureLabel = isInvestissement ? "Investissement" : "Depense";
+  const natureLabel = isInvestissement ? t("category.investment") : t("category.expense");
   const natureDotColor = isInvestissement ? "bg-[#30d158]" : "bg-[#ff453a]";
+  const catLabel = getCatTranslation(item.category.id, "label", locale) || item.category.label;
+  const catDesc = getCatTranslation(item.category.id, "desc", locale) || item.category.description;
+  const catReason = getCatTranslation(item.category.id, "reason", locale) || item.category.natureReason;
+  const compItem = comparison ? (getCompTranslation(item.category.id, locale) || comparison.item) : "";
 
   return (
     <SlideLayout gradient={theme.background}>
@@ -54,7 +61,7 @@ export function SlideCategory({ item }: Props) {
         transition={{ delay: 0.25 }}
         className="mt-2 text-[20px] font-bold tracking-tight text-text-primary"
       >
-        {item.category.label}
+        {catLabel}
       </motion.h2>
 
       {/* Nature badge */}
@@ -78,7 +85,7 @@ export function SlideCategory({ item }: Props) {
         transition={{ delay: 0.45 }}
         className="mt-1 text-[11px] text-text-muted"
       >
-        {item.category.description}
+        {catDesc}
       </motion.p>
 
       <div className="my-4">
@@ -98,7 +105,7 @@ export function SlideCategory({ item }: Props) {
         <span className={`mono-number text-[24px] font-bold ${theme.accent}`}>
           {item.percentage.toFixed(1)}%
         </span>
-        <span className="text-[11px] text-text-muted">de vos impots</span>
+        <span className="text-[11px] text-text-muted">{t("category.ofYourTaxes")}</span>
       </motion.div>
 
       {/* Nature explanation */}
@@ -109,7 +116,7 @@ export function SlideCategory({ item }: Props) {
           transition={{ delay: 1.7 }}
           className="mt-3 max-w-[240px] text-[10px] italic text-text-muted"
         >
-          {item.category.natureReason}
+          {catReason}
         </motion.p>
       )}
 
@@ -121,11 +128,11 @@ export function SlideCategory({ item }: Props) {
           className="glass-card mt-4 px-5 py-3"
         >
           <p className="text-[11px] text-text-secondary">
-            Soit{" "}
+            {t("category.thatsAlso")}{" "}
             <span className="mono-number font-bold text-text-primary">
               {formatNumber(comparisonCount)}
             </span>{" "}
-            {comparison.item}
+            {compItem}
           </p>
         </motion.div>
       )}

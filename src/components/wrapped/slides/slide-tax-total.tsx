@@ -6,12 +6,14 @@ import { AnimatedCounter } from "../shared/animated-counter";
 import { SLIDE_THEMES } from "@/styles/slide-themes";
 import { formatEuro, formatPercent } from "@/lib/utils";
 import type { TaxResult } from "@/lib/tax/calculator";
+import { useT } from "@/lib/i18n/context";
 
 interface Props {
   result: TaxResult;
 }
 
 export function SlideTaxTotal({ result }: Props) {
+  const { t } = useT();
   return (
     <SlideLayout gradient={SLIDE_THEMES["tax-reveal"].background}>
       <motion.p
@@ -20,7 +22,7 @@ export function SlideTaxTotal({ result }: Props) {
         transition={{ delay: 0.2 }}
         className="text-[12.5px] text-text-muted"
       >
-        En 2025, vous avez paye
+        {t("tax.in2025")}
       </motion.p>
 
       <div className="my-3">
@@ -38,7 +40,7 @@ export function SlideTaxTotal({ result }: Props) {
         transition={{ delay: 1.5 }}
         className="text-[12.5px] font-medium text-text-secondary"
       >
-        d&apos;impot sur le revenu
+        {t("tax.incomeTax")}
       </motion.p>
 
       <motion.div
@@ -51,7 +53,7 @@ export function SlideTaxTotal({ result }: Props) {
           <p className="mono-number text-[20px] font-bold tracking-[-0.5px] text-text-primary">
             {formatPercent(result.tauxEffectif)}
           </p>
-          <p className="text-[10px] font-medium text-text-muted">taux effectif</p>
+          <p className="text-[10px] font-medium text-text-muted">{t("tax.effectiveRate")}</p>
         </div>
         <div className="h-8 w-px bg-border-subtle" />
         <div className="text-center">
@@ -59,7 +61,7 @@ export function SlideTaxTotal({ result }: Props) {
             {result.partsFiscales}
           </p>
           <p className="text-[10px] font-medium text-text-muted">
-            {result.partsFiscales > 1 ? "parts" : "part"}
+            {result.partsFiscales > 1 ? t("form.parts") : t("form.part")}
           </p>
         </div>
       </motion.div>

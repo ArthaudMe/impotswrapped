@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { SlideLayout } from "../shared/slide-layout";
 import { SLIDE_THEMES } from "@/styles/slide-themes";
+import { useT } from "@/lib/i18n/context";
 
 interface Props {
   slideIndex: 0 | 1 | 2;
@@ -17,6 +18,8 @@ const confettiPieces = Array.from({ length: 8 }, (_, i) => ({
 }));
 
 export function SlideNonImposable({ slideIndex, onReset }: Props) {
+  const { t } = useT();
+
   if (slideIndex === 0) {
     return (
       <SlideLayout gradient={SLIDE_THEMES["non-imposable"].background}>
@@ -52,7 +55,7 @@ export function SlideNonImposable({ slideIndex, onReset }: Props) {
           transition={{ delay: 0.25 }}
           className="mt-3 text-[20px] font-bold tracking-tight text-text-primary"
         >
-          Bonne nouvelle !
+          {t("nonTax.goodNews")}
         </motion.h2>
         <motion.p
           initial={{ opacity: 0 }}
@@ -60,7 +63,7 @@ export function SlideNonImposable({ slideIndex, onReset }: Props) {
           transition={{ delay: 0.6 }}
           className="mt-2 max-w-[220px] text-[12.5px] text-text-secondary"
         >
-          Vous n&apos;etes pas imposable sur le revenu en 2025.
+          {t("nonTax.notTaxable")}
         </motion.p>
       </SlideLayout>
     );
@@ -74,7 +77,7 @@ export function SlideNonImposable({ slideIndex, onReset }: Props) {
           animate={{ opacity: 1 }}
           className="text-[16px] font-bold tracking-tight text-text-primary"
         >
-          Mais vous contribuez quand meme
+          {t("nonTax.butYouContribute")}
         </motion.h2>
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -83,9 +86,9 @@ export function SlideNonImposable({ slideIndex, onReset }: Props) {
           className="mt-5 w-full max-w-[260px] space-y-2"
         >
           {[
-            { t: "TVA", d: "20% sur chaque achat" },
-            { t: "CSG / CRDS", d: "9,7% sur vos revenus" },
-            { t: "Taxes locales", d: "Taxe fonciere, etc." },
+            { t: t("nonTax.vat"), d: t("nonTax.vatDesc") },
+            { t: "CSG / CRDS", d: t("nonTax.csgDesc") },
+            { t: t("nonTax.localTaxes"), d: t("nonTax.localDesc") },
           ].map((item, i) => (
             <motion.div
               key={item.t}
@@ -119,7 +122,7 @@ export function SlideNonImposable({ slideIndex, onReset }: Props) {
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
         />
         <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-          Non imposable
+          {t("nonTax.badge")}
         </span>
       </motion.div>
       <motion.h2
@@ -128,7 +131,7 @@ export function SlideNonImposable({ slideIndex, onReset }: Props) {
         transition={{ delay: 0.2 }}
         className="mt-3 text-[16px] font-bold text-text-primary"
       >
-        Non imposable 2025
+        {t("nonTax.title")}
       </motion.h2>
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -140,7 +143,7 @@ export function SlideNonImposable({ slideIndex, onReset }: Props) {
           onClick={onReset}
           className="h-11 w-full rounded-[10px] text-[13px] font-semibold"
         >
-          Refaire avec un autre revenu
+          {t("nonTax.redoOther")}
         </Button>
       </motion.div>
     </SlideLayout>

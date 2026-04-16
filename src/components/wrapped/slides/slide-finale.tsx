@@ -8,6 +8,7 @@ import { SLIDE_THEMES } from "@/styles/slide-themes";
 import { formatEuro, formatPercent } from "@/lib/utils";
 import type { TaxResult } from "@/lib/tax/calculator";
 import type { CategoryBreakdown } from "@/lib/budget/compute-breakdown";
+import { useT } from "@/lib/i18n/context";
 
 interface Props {
   result: TaxResult;
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function SlideFinale({ result, breakdown, onShare, onReset }: Props) {
+  const { t } = useT();
   const totalInvestissement = breakdown
     .filter((b) => b.category.nature === "investissement")
     .reduce((sum, b) => sum + b.amount, 0);
@@ -36,7 +38,7 @@ export function SlideFinale({ result, breakdown, onShare, onReset }: Props) {
         className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle px-3 py-1"
       >
         <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-          Recap 2025
+          {t("finale.recap")}
         </span>
       </motion.div>
 
@@ -50,7 +52,7 @@ export function SlideFinale({ result, breakdown, onShare, onReset }: Props) {
           {formatEuro(result.impotNet)}
         </p>
         <p className="mt-0.5 text-[11px] text-text-muted">
-          Taux effectif :{" "}
+          {t("finale.effectiveRate")}{" "}
           <span className="mono-number font-semibold text-text-secondary">
             {formatPercent(result.tauxEffectif)}
           </span>
@@ -67,7 +69,7 @@ export function SlideFinale({ result, breakdown, onShare, onReset }: Props) {
         <div className="flex items-center gap-2 text-[10px]">
           <div className="flex items-center gap-1">
             <span className="inline-block size-1.5 rounded-full bg-[#30d158]" />
-            <span className="text-text-muted">Investissement</span>
+            <span className="text-text-muted">{t("category.investment")}</span>
           </div>
           <span className="mono-number font-semibold text-[#30d158]">
             {formatPercent(investPct, 0)}
@@ -75,7 +77,7 @@ export function SlideFinale({ result, breakdown, onShare, onReset }: Props) {
           <div className="mx-1 h-3 w-px bg-border-subtle" />
           <div className="flex items-center gap-1">
             <span className="inline-block size-1.5 rounded-full bg-[#ff453a]" />
-            <span className="text-text-muted">Depense</span>
+            <span className="text-text-muted">{t("category.expense")}</span>
           </div>
           <span className="mono-number font-semibold text-[#ff453a]">
             {formatPercent(depensePct, 0)}
@@ -117,14 +119,14 @@ export function SlideFinale({ result, breakdown, onShare, onReset }: Props) {
           onClick={onShare}
           className="h-11 w-full rounded-[10px] text-[13px] font-semibold"
         >
-          Partager
+          {t("finale.share")}
         </Button>
         <Button
           onClick={onReset}
           variant="outline"
           className="h-11 w-full rounded-[10px] border-border-subtle text-[13px] font-semibold text-text-secondary hover:bg-surface-raised"
         >
-          Refaire
+          {t("finale.redo")}
         </Button>
       </motion.div>
     </SlideLayout>

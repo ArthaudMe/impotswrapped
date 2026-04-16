@@ -4,6 +4,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { formatEuro } from "@/lib/utils";
 import type { CategoryBreakdown } from "@/lib/budget/compute-breakdown";
+import { useT } from "@/lib/i18n/context";
+import { getCatTranslation } from "@/lib/i18n/translations";
 
 interface BarChartProps {
   data: CategoryBreakdown[];
@@ -13,6 +15,7 @@ interface BarChartProps {
 }
 
 export function BarChart({ data, className, compact = false, showAmounts = false }: BarChartProps) {
+  const { t, locale } = useT();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const maxPer1000 = Math.max(...data.map((d) => d.category.per1000));
 
@@ -43,7 +46,7 @@ export function BarChart({ data, className, compact = false, showAmounts = false
                     <span className="text-[12px]">{item.category.emoji}</span>
                   )}
                   <span className="text-[11px] text-text-secondary">
-                    {item.category.label}
+                    {getCatTranslation(item.category.id, "label", locale) || item.category.label}
                   </span>
                   {nature && !compact && (
                     <span
@@ -54,8 +57,8 @@ export function BarChart({ data, className, compact = false, showAmounts = false
                       }`}
                       title={
                         nature === "investissement"
-                          ? "Investissement"
-                          : "Depense"
+                          ? t("category.investment")
+                          : t("category.expense")
                       }
                     />
                   )}
@@ -109,7 +112,7 @@ export function BarChart({ data, className, compact = false, showAmounts = false
                   className="overflow-hidden text-[10px] text-text-muted"
                 >
                   <span className="mt-0.5 block">
-                    {item.percentage.toFixed(1)}% — {item.category.description}
+                    {item.percentage.toFixed(1)}% — {getCatTranslation(item.category.id, "desc", locale) || item.category.description}
                   </span>
                 </motion.p>
               )}
@@ -128,11 +131,11 @@ export function BarChart({ data, className, compact = false, showAmounts = false
         >
           <div className="flex items-center gap-1">
             <span className="inline-block size-1.5 rounded-full bg-[#30d158]" />
-            <span className="text-[9px] text-text-muted">Investissement</span>
+            <span className="text-[9px] text-text-muted">{t("category.investment")}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="inline-block size-1.5 rounded-full bg-[#ff453a]" />
-            <span className="text-[9px] text-text-muted">Depense</span>
+            <span className="text-[9px] text-text-muted">{t("category.expense")}</span>
           </div>
         </motion.div>
       )}

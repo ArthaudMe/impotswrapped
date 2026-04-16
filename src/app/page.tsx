@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShimmerText } from "@/components/shared/shimmer-text";
 import { Hero } from "@/components/landing/hero";
@@ -13,6 +13,7 @@ import {
   type TaxResult,
 } from "@/lib/tax/calculator";
 import { decodeParams } from "@/lib/share/encode-params";
+import { useT } from "@/lib/i18n/context";
 
 type AppMode = "landing" | "form" | "wrapped";
 
@@ -22,25 +23,31 @@ const pageVariants = {
   exit: { opacity: 0, y: -20 },
 };
 
-export default function Home() {
-  const [mode, setMode] = useState<AppMode>("landing");
-  const [taxInput, setTaxInput] = useState<TaxInput | null>(null);
-  const [taxResult, setTaxResult] = useState<TaxResult | null>(null);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get("r");
-    if (encoded) {
-      const decoded = decodeParams(encoded);
-      if (decoded) {
-        const result = calculateTax(decoded);
-        setTaxInput(decoded);
-        setTaxResult(result);
-        setMode("wrapped");
-        window.history.replaceState({}, "", window.location.pathname);
-      }
+function getInitialShareParams(): TaxInput | null {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get("r");
+  if (encoded) {
+    const decoded = decodeParams(encoded);
+    if (decoded) {
+      window.history.replaceState({}, "", window.location.pathname);
+      return decoded;
     }
-  }, []);
+  }
+  return null;
+}
+
+const subscribe = () => () => {};
+const emptySnapshot = () => null as TaxInput | null;
+
+export default function Home() {
+  const { t } = useT();
+  const shareParams = useSyncExternalStore(subscribe, getInitialShareParams, emptySnapshot);
+  const [mode, setMode] = useState<AppMode>(() => shareParams ? "wrapped" : "landing");
+  const [taxInput, setTaxInput] = useState<TaxInput | null>(() => shareParams);
+  const [taxResult, setTaxResult] = useState<TaxResult | null>(() =>
+    shareParams ? calculateTax(shareParams) : null
+  );
 
   const handleStart = () => setMode("form");
 
@@ -130,10 +137,10 @@ export default function Home() {
             >
               <div className="text-center">
                 <h2 className="text-lg font-semibold tracking-tight">
-                  Vos informations
+                  {t("form.title")}
                 </h2>
                 <p className="mt-1 text-[11px] text-text-muted">
-                  Tout reste sur votre appareil.
+                  {t("form.subtitle")}
                 </p>
               </div>
               <IncomeForm
@@ -156,7 +163,7 @@ export default function Home() {
         className="px-5 pb-5 safe-bottom"
       >
         <p className="text-center text-[10px] text-text-muted">
-          Site non officiel · Calculs indicatifs · Bareme 2025
+          {t("footer")}
         </p>
       </motion.footer>
     </div>

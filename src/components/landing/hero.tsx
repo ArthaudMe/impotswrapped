@@ -2,12 +2,16 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/context";
 
 interface HeroProps {
   onStart: () => void;
 }
 
 export function Hero({ onStart }: HeroProps) {
+  const { t } = useT();
+  const [line1, line2] = t("hero.title").split("\n");
+
   return (
     <div className="flex flex-col items-center text-center">
       {/* French flag */}
@@ -34,7 +38,7 @@ export function Hero({ onStart }: HeroProps) {
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
         />
         <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-          Revenus 2025
+          {t("hero.badge")}
         </span>
       </motion.div>
 
@@ -44,9 +48,9 @@ export function Hero({ onStart }: HeroProps) {
         transition={{ delay: 0.2, duration: 0.5 }}
         className="text-[28px] font-bold leading-tight tracking-[-0.5px]"
       >
-        Decouvrez ou vont
+        {line1}
         <br />
-        vos impots
+        {line2}
       </motion.h1>
 
       <motion.p
@@ -55,7 +59,7 @@ export function Hero({ onStart }: HeroProps) {
         transition={{ delay: 0.4 }}
         className="mt-3 max-w-[260px] text-[12.5px] leading-relaxed text-text-secondary"
       >
-        Entrez votre revenu, on calcule et on vous montre tout.
+        {t("hero.subtitle")}
       </motion.p>
 
       <motion.div
@@ -68,7 +72,7 @@ export function Hero({ onStart }: HeroProps) {
           onClick={onStart}
           className="h-11 w-full rounded-[10px] text-[13px] font-semibold"
         >
-          Commencer
+          {t("hero.cta")}
         </Button>
       </motion.div>
     </div>
