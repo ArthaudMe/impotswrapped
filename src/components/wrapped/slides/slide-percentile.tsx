@@ -3,10 +3,7 @@
 import { motion } from "framer-motion";
 import { SlideLayout } from "../shared/slide-layout";
 import { SLIDE_THEMES } from "@/styles/slide-themes";
-import {
-  getIncomePercentile,
-  getPercentileLabel,
-} from "@/lib/tax/percentiles";
+import { getIncomePercentile } from "@/lib/tax/percentiles";
 import { formatNumber } from "@/lib/utils";
 import { useT } from "@/lib/i18n/context";
 
@@ -16,15 +13,18 @@ interface Props {
 
 export function SlidePercentile({ revenuNetImposable }: Props) {
   const { t } = useT();
-  const percentile = getIncomePercentile(revenuNetImposable);
-  const topPercent = Math.max(0.1, 100 - percentile);
-  const label = getPercentileLabel(percentile);
+  const rawPercentile = getIncomePercentile(revenuNetImposable);
+  const rawTop = Math.max(0.1, 100 - rawPercentile);
+  // Round topPercent first, then derive earnMoreThan so the two numbers are consistent
+  const topPercent = rawTop >= 1 ? Math.round(rawTop) : parseFloat(rawTop.toFixed(1));
+  const earnMoreThan = 100 - topPercent;
+  const label = `top ${topPercent < 1 ? topPercent.toFixed(1) : topPercent}%`;
 
   // Generate bar segments (20 bars representing the population)
   const totalBars = 20;
   const highlightedBar = Math.min(
     totalBars - 1,
-    Math.floor((percentile / 100) * totalBars)
+    Math.floor((earnMoreThan / 100) * totalBars)
   );
 
   return (
@@ -57,7 +57,7 @@ export function SlidePercentile({ revenuNetImposable }: Props) {
       >
         {t("percentile.youEarnMore")}{" "}
         <span className="mono-number font-bold text-text-primary">
-          {formatNumber(Math.round(percentile))}%
+          {formatNumber(earnMoreThan)}%
         </span>{" "}
         {t("percentile.ofHouseholds")}
       </motion.p>
@@ -103,9 +103,7 @@ export function SlidePercentile({ revenuNetImposable }: Props) {
       >
         <span className="text-[9px] text-text-muted">0%</span>
         <span className="text-[9px] text-text-muted">
-          {topPercent < 1
-            ? `${t("percentile.you")} (top ${topPercent.toFixed(1)}%)`
-            : `${t("percentile.you")} (top ${Math.round(topPercent)}%)`}
+          {t("percentile.you")} ({label})
         </span>
         <span className="text-[9px] text-text-muted">100%</span>
       </motion.div>
