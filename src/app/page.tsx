@@ -5,14 +5,21 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ShimmerText } from "@/components/shared/shimmer-text";
 import { Hero } from "@/components/landing/hero";
 import { IncomeForm } from "@/components/landing/income-form";
+import { PreferenceForm } from "@/components/landing/preference-form";
 import { PrivacyBadge } from "@/components/landing/privacy-badge";
+import { InteractionModeSelector } from "@/components/landing/interaction-mode-selector";
 import { WrappedContainer } from "@/components/wrapped/wrapped-container";
 import {
   calculateTax,
   type TaxInput,
   type TaxResult,
 } from "@/lib/tax/calculator";
-import { decodeParams } from "@/lib/share/encode-params";
+import {
+  decodePayload,
+  decodeLegacyParams,
+  type SharePayload,
+  type PreferenceValues,
+} from "@/lib/share/encode-params";
 import { useT } from "@/lib/i18n/context";
 
 type AppMode = "landing" | "form" | "wrapped";
@@ -23,44 +30,78 @@ const pageVariants = {
   exit: { opacity: 0, y: -20 },
 };
 
-function getInitialShareParams(): TaxInput | null {
+function getInitialSharePayload(): SharePayload | null {
   if (typeof window === "undefined") return null;
   const params = new URLSearchParams(window.location.search);
   const encoded = params.get("r");
   if (encoded) {
-    const decoded = decodeParams(encoded);
+    const decoded = decodePayload(encoded);
     if (decoded) {
       window.history.replaceState({}, "", window.location.pathname);
       return decoded;
+    }
+    const legacy = decodeLegacyParams(encoded);
+    if (legacy) {
+      window.history.replaceState({}, "", window.location.pathname);
+      return { version: "v2", mode: "classic", tax: legacy };
     }
   }
   return null;
 }
 
 const subscribe = () => () => {};
-const emptySnapshot = () => null as TaxInput | null;
+const emptySnapshot = () => null as SharePayload | null;
 
 export default function Home() {
   const { t } = useT();
-  const shareParams = useSyncExternalStore(subscribe, getInitialShareParams, emptySnapshot);
-  const [mode, setMode] = useState<AppMode>(() => shareParams ? "wrapped" : "landing");
-  const [taxInput, setTaxInput] = useState<TaxInput | null>(() => shareParams);
+  const sharePayload = useSyncExternalStore(subscribe, getInitialSharePayload, emptySnapshot);
+  
+  const [mode, setMode] = useState<AppMode>(() => sharePayload ? "wrapped" : "landing");
+  
+  const [interactionMode, setInteractionMode] = useState<"classic" | "preference">(() =>
+    sharePayload?.mode ?? "preference"
+  );
+  
+  const [taxInput, setTaxInput] = useState<TaxInput | null>(() =>
+    sharePayload?.tax ?? null
+  );
+  
   const [taxResult, setTaxResult] = useState<TaxResult | null>(() =>
-    shareParams ? calculateTax(shareParams) : null
+    sharePayload ? calculateTax(sharePayload.tax) : null
+  );
+  
+  const [preferences, setPreferences] = useState<PreferenceValues | null>(() =>
+    sharePayload?.mode === "preference" && sharePayload.preferences 
+      ? sharePayload.preferences 
+      : null
   );
 
   const handleStart = () => setMode("form");
 
-  const handleSubmit = (input: TaxInput) => {
+  const handleClassicSubmit = (input: TaxInput) => {
     const result = calculateTax(input);
     setTaxInput(input);
     setTaxResult(result);
+    setPreferences(null);
+    setMode("wrapped");
+  };
+
+  const handlePreferenceSubmit = (
+    input: TaxInput,
+    prefs: PreferenceValues
+  ) => {
+    const result = calculateTax(input);
+    setTaxInput(input);
+    setTaxResult(result);
+    setPreferences(prefs);
     setMode("wrapped");
   };
 
   const handleReset = () => {
     setMode("form");
     setTaxResult(null);
+    setPreferences(null);
+    // Keep interactionMode as-is to preserve current context
   };
 
   if (mode === "wrapped" && taxResult && taxInput) {
@@ -74,6 +115,8 @@ export default function Home() {
         <WrappedContainer
           result={taxResult}
           input={taxInput}
+          preferences={preferences}
+          interactionMode={interactionMode}
           onReset={handleReset}
         />
       </motion.div>
@@ -143,10 +186,39 @@ export default function Home() {
                   {t("form.subtitle")}
                 </p>
               </div>
-              <IncomeForm
-                onSubmit={handleSubmit}
-                initialValues={taxInput ?? undefined}
+              <InteractionModeSelector
+                mode={interactionMode}
+                onChange={setInteractionMode}
               />
+              <AnimatePresence mode="wait">
+                {interactionMode === "classic" && (
+                  <motion.div
+                    key="classic-form"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <IncomeForm
+                      onSubmit={handleClassicSubmit}
+                      initialValues={taxInput ?? undefined}
+                    />
+                  </motion.div>
+                )}
+                {interactionMode === "preference" && (
+                  <motion.div
+                    key="preference-form"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <PreferenceForm
+                      onSubmit={handlePreferenceSubmit}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <div className="flex justify-center">
                 <PrivacyBadge />
               </div>
