@@ -4,26 +4,33 @@ import { motion } from "framer-motion";
 import { SlideLayout } from "../shared/slide-layout";
 import { AnimatedCounter } from "../shared/animated-counter";
 import { SLIDE_THEMES } from "@/styles/slide-themes";
-import { formatEuro, formatNumber } from "@/lib/utils";
+import { formatEuro } from "@/lib/utils";
 import type { CategoryBreakdown } from "@/lib/budget/compute-breakdown";
-import {
-  getComparisonForCategory,
-  computeComparison,
-} from "@/lib/budget/comparisons";
+
 import { useT } from "@/lib/i18n/context";
-import { getCatTranslation, getCompTranslation } from "@/lib/i18n/translations";
+import { getCatTranslation } from "@/lib/i18n/translations";
+
+interface ComparisonData {
+  actualPercent: number;
+  adjustedPercent: number;
+  delta: number;
+}
 
 interface Props {
   item: CategoryBreakdown;
+  preferenceComparison?: ComparisonData;
 }
 
-export function SlideCategory({ item }: Props) {
+export function SlideCategory({ item, preferenceComparison }: Props) {
   const { t, locale } = useT();
   const theme = SLIDE_THEMES[item.category.id] || SLIDE_THEMES.breakdown;
-  const comparison = getComparisonForCategory(item.category.id);
-  const comparisonCount = comparison
-    ? computeComparison(item.amount, comparison.unitPrice)
-    : 0;
+  const categoryComparison = preferenceComparison
+    ? {
+        actual: preferenceComparison.actualPercent,
+        adjusted: preferenceComparison.adjustedPercent,
+        delta: preferenceComparison.delta,
+      }
+    : undefined;
 
   const isInvestissement = item.category.nature === "investissement";
   const natureLabel = isInvestissement ? t("category.investment") : t("category.expense");
@@ -31,7 +38,6 @@ export function SlideCategory({ item }: Props) {
   const catLabel = getCatTranslation(item.category.id, "label", locale) || item.category.label;
   const catDesc = getCatTranslation(item.category.id, "desc", locale) || item.category.description;
   const catReason = getCatTranslation(item.category.id, "reason", locale) || item.category.natureReason;
-  const compItem = comparison ? (getCompTranslation(item.category.id, locale) || comparison.item) : "";
 
   return (
     <SlideLayout gradient={theme.background}>
@@ -96,17 +102,63 @@ export function SlideCategory({ item }: Props) {
         />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1.4, type: "spring" }}
-        className="flex items-baseline gap-1"
-      >
-        <span className={`mono-number text-[24px] font-bold ${theme.accent}`}>
-          {item.percentage.toFixed(1)}%
-        </span>
-        <span className="text-[11px] text-text-muted">{t("category.ofYourTaxes")}</span>
-      </motion.div>
+      {/* Preference mode: deviation-first display */}
+      {categoryComparison ? (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4, type: "spring" }}
+          className="space-y-2"
+        >
+          <div className="flex items-baseline gap-2">
+            <span className={`mono-number text-[32px] font-bold ${theme.accent}`}>
+              {categoryComparison.delta > 0 ? "+" : ""}
+              {categoryComparison.delta.toFixed(1)}%
+            </span>
+            <span className="text-[11px] font-medium text-text-muted">
+              {categoryComparison.delta === 0
+                ? t("pref.delta.neutral")
+                : categoryComparison.delta > 0
+                  ? t("pref.delta.moreThanYouPrefer").replace("{delta}", categoryComparison.delta.toFixed(1))
+                  : t("pref.delta.lessThanYouPrefer").replace("{delta}", Math.abs(categoryComparison.delta).toFixed(1))}
+            </span>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.6, type: "spring" }}
+            className="flex items-center justify-center gap-4 text-[10px]"
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block size-1.5 rounded-full bg-text-secondary" />
+              <span className="text-[9px] text-text-muted">{t("pref.compare.actual")}</span>
+              <span className="mono-number text-[11px] font-semibold text-text-primary">
+                {categoryComparison.actual.toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block size-1.5 rounded-full bg-text-tertiary" />
+              <span className="text-[9px] text-text-muted">{t("pref.compare.adjusted")}</span>
+              <span className="mono-number text-[11px] font-semibold text-text-primary">
+                {categoryComparison.adjusted.toFixed(1)}%
+              </span>
+            </div>
+          </motion.div>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.4, type: "spring" }}
+          className="flex items-baseline gap-1"
+        >
+          <span className={`mono-number text-[24px] font-bold ${theme.accent}`}>
+            {item.percentage.toFixed(1)}%
+          </span>
+          <span className="text-[11px] text-text-muted">{t("category.ofYourTaxes")}</span>
+        </motion.div>
+      )}
 
       {/* Nature explanation */}
       {item.category.natureReason && (
@@ -118,23 +170,6 @@ export function SlideCategory({ item }: Props) {
         >
           {catReason}
         </motion.p>
-      )}
-
-      {comparison && comparisonCount > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 16, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ delay: 2, type: "spring", stiffness: 200 }}
-          className="glass-card mt-4 px-5 py-3"
-        >
-          <p className="text-[11px] text-text-secondary">
-            {t("category.thatsAlso")}{" "}
-            <span className="mono-number font-bold text-text-primary">
-              {formatNumber(comparisonCount)}
-            </span>{" "}
-            {compItem}
-          </p>
-        </motion.div>
       )}
     </SlideLayout>
   );
