@@ -12,18 +12,37 @@ interface BarChartProps {
   className?: string;
   compact?: boolean;
   showAmounts?: boolean;
+  adjustedTargets?: Record<string, number>;
 }
 
-export function BarChart({ data, className, compact = false, showAmounts = false }: BarChartProps) {
+export function BarChart({
+  data,
+  className,
+  compact = false,
+  showAmounts = false,
+  adjustedTargets,
+}: BarChartProps) {
   const { t, locale } = useT();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const maxPer1000 = Math.max(...data.map((d) => d.category.per1000));
+
+  // Use percentages as the comparison basis (both actual and targets are %)
+  const maxActual = Math.max(...data.map((d) => d.percentage));
+  const maxTarget = adjustedTargets
+    ? Math.max(...Object.values(adjustedTargets))
+    : 0;
+
+  // Expand scale if adjusted targets exceed max actual
+  const maxScale = Math.max(maxActual, maxTarget);
 
   return (
     <div className={className}>
       <div className="w-full space-y-2">
         {data.map((item, i) => {
-          const widthPercent = (item.category.per1000 / maxPer1000) * 100;
+          const actualWidthPercent = (item.percentage / maxScale) * 100;
+          const targetWidthPercent =
+            adjustedTargets && adjustedTargets[item.category.id] !== undefined
+              ? (adjustedTargets[item.category.id] / maxScale) * 100
+              : 0;
           const isActive = activeIndex === i;
           const nature = item.category.nature;
 
@@ -79,12 +98,12 @@ export function BarChart({ data, className, compact = false, showAmounts = false
                 )}
               </div>
 
-              <div className="relative h-2 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.04)]">
+               <div className="relative h-2 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.04)]">
                 <motion.div
                   className="absolute inset-y-0 left-0 rounded-full"
                   style={{ backgroundColor: item.category.color }}
                   initial={{ width: 0 }}
-                  animate={{ width: `${widthPercent}%` }}
+                  animate={{ width: `${actualWidthPercent}%` }}
                   transition={{
                     delay: 0.25 + i * 0.08,
                     duration: 0.6,
@@ -95,8 +114,14 @@ export function BarChart({ data, className, compact = false, showAmounts = false
                   <motion.div
                     className="absolute inset-y-0 left-0 rounded-full bg-white/10"
                     initial={{ width: 0 }}
-                    animate={{ width: `${widthPercent}%` }}
+                    animate={{ width: `${actualWidthPercent}%` }}
                     transition={{ duration: 0.15 }}
+                  />
+                )}
+                {targetWidthPercent > 0 && (
+                  <div
+                    className="absolute inset-y-0 rounded-full border-2 border-white/40"
+                    style={{ width: `${targetWidthPercent}%` }}
                   />
                 )}
               </div>

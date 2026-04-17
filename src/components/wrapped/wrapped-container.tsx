@@ -5,7 +5,12 @@ import { useWrappedState } from "@/lib/hooks/use-wrapped-state";
 import { useSwipe } from "@/lib/hooks/use-swipe";
 import { useKeyboardNav } from "@/lib/hooks/use-keyboard-nav";
 import { computeBreakdown } from "@/lib/budget/compute-breakdown";
-import { encodeParams } from "@/lib/share/encode-params";
+import {
+  computeOtherShare,
+  adjustPreferencesForOther,
+  computeDeviations,
+} from "@/lib/budget/preferences";
+import { encodePayload, makeClassicPayload, makePreferencePayload, type PreferenceValues } from "@/lib/share/encode-params";
 import { useT } from "@/lib/i18n/context";
 import { ProgressBar } from "./progress-bar";
 import { SlideRenderer } from "./slide-renderer";
@@ -23,15 +28,21 @@ import { SlideNonImposable } from "./slides/slide-non-imposable";
 import { SlidePercentile } from "./slides/slide-percentile";
 import type { TaxResult, TaxInput } from "@/lib/tax/calculator";
 
+type InteractionMode = "classic" | "preference";
+
 interface WrappedContainerProps {
   result: TaxResult;
   input: TaxInput;
+  preferences: PreferenceValues | null;
+  interactionMode: InteractionMode;
   onReset: () => void;
 }
 
 export function WrappedContainer({
   result,
   input,
+  preferences,
+  interactionMode,
   onReset,
 }: WrappedContainerProps) {
   const { t } = useT();
@@ -47,6 +58,58 @@ export function WrappedContainer({
     () => breakdown.filter((b) => !b.category.id.startsWith("autres")),
     [breakdown]
   );
+
+  // Prepare preference-aware comparison model for preference mode
+  const preferenceData = useMemo(() => {
+    // Classic mode or no preferences → no comparison data
+    if (interactionMode !== "preference" || !preferences) {
+      return null;
+    }
+
+    // Step 1: Compute Other share from actual breakdown
+    const otherShare = computeOtherShare(breakdown);
+
+    // Step 2: Build explicit plain object for 6 focus categories (type-safe)
+    const rawPreferenceMap: Record<string, number> = {
+      retraites: preferences.retraites,
+      sante: preferences.sante,
+      education: preferences.education,
+      administration: preferences.administration,
+      defense: preferences.defense,
+      dette: preferences.dette,
+    };
+
+    // Step 3: Adjust preferences to exclude Other share
+    const adjustedPreferences = adjustPreferencesForOther(
+      rawPreferenceMap,
+      otherShare
+    );
+
+    // Step 4: Build actual % map from focus categories
+    const actualPercentages: Record<string, number> = {};
+    for (const item of breakdown) {
+      if (!item.category.id.startsWith("autres")) {
+        actualPercentages[item.category.id] = item.percentage;
+      }
+    }
+
+    // Step 5: Compute deviations (the comparison model)
+    const comparisonModel = computeDeviations(actualPercentages, adjustedPreferences);
+
+    // Compute total delta magnitude for summary
+    const totalDeltaMagnitude = comparisonModel.reduce(
+      (sum, item) => sum + Math.abs(item.delta),
+      0
+    );
+
+    return {
+      otherShare,
+      adjustedPreferences,
+      actualPercentages,
+      comparisonModel,
+      totalDeltaMagnitude,
+    };
+  }, [breakdown, interactionMode, preferences]);
 
   const detteItem = breakdown.find((b) => b.category.id === "dette");
 
@@ -70,7 +133,16 @@ export function WrappedContainer({
   useKeyboardNav(next, prev);
 
   const handleShare = useCallback(async () => {
-    const encoded = encodeParams(input);
+    let encoded: string;
+    
+    if (interactionMode === "preference" && preferences) {
+      const payload = makePreferencePayload(input, preferences);
+      encoded = encodePayload(payload);
+    } else {
+      const payload = makeClassicPayload(input);
+      encoded = encodePayload(payload);
+    }
+    
     const url = `${window.location.origin}?r=${encoded}`;
     const shareData = {
       title: t("share.title"),
@@ -87,7 +159,7 @@ export function WrappedContainer({
     } else {
       await navigator.clipboard.writeText(url);
     }
-  }, [input, result.tauxEffectif, t]);
+  }, [input, result.tauxEffectif, interactionMode, preferences, t]);
 
   const handleTapNav = useCallback(
     (e: React.MouseEvent) => {
@@ -118,8 +190,21 @@ export function WrappedContainer({
     if (currentSlide === idx++)
       return <SlidePercentile revenuNetImposable={result.revenuNetImposable} />;
     if (currentSlide === idx++) return <SlideDailyCost result={result} />;
-    if (currentSlide === idx++)
-      return <SlideBreakdown breakdown={breakdown} totalTax={result.totalPrelevements} />;
+    if (currentSlide === idx++) {
+      const adjustedTargets = preferenceData?.comparisonModel.reduce(
+        (acc, item) => {
+          acc[item.category] = item.adjustedPercent;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
+      return <SlideBreakdown breakdown={breakdown} totalTax={result.totalPrelevements} adjustedTargets={adjustedTargets} />;
+    }
+
+    // Guard for preference mode: show loading/empty state if comparison data not ready
+    if (interactionMode === "preference" && !preferenceData) {
+      return <div className="flex h-full items-center justify-center text-text-secondary">Loading...</div>;
+    }
 
     // 6 category slides — use special debt interest slide for "dette"
     const catStart = idx;
@@ -133,7 +218,11 @@ export function WrappedContainer({
           />
         );
       }
-      return <SlideCategory item={catItem} />;
+      // Find comparison data for this category in preference mode
+      const catComparison = preferenceData?.comparisonModel.find(
+        (c) => c.category === catItem.category.id
+      );
+      return <SlideCategory item={catItem} preferenceComparison={catComparison} />;
     }
     idx = catStart + focusCategories.length;
 

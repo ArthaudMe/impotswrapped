@@ -11,9 +11,10 @@ import { useT } from "@/lib/i18n/context";
 interface Props {
   breakdown: CategoryBreakdown[];
   totalTax: number;
+  adjustedTargets?: Record<string, number>;
 }
 
-export function SlideBreakdown({ breakdown, totalTax }: Props) {
+export function SlideBreakdown({ breakdown, totalTax, adjustedTargets }: Props) {
   const { t } = useT();
   return (
     <SlideLayout gradient={SLIDE_THEMES.breakdown.background}>
@@ -30,7 +31,7 @@ export function SlideBreakdown({ breakdown, totalTax }: Props) {
         {t("breakdown.questionMark")}
       </motion.p>
 
-      <BarChart data={breakdown} className="w-full max-w-[280px]" />
+      <BarChart data={breakdown} className="w-full max-w-[280px]" adjustedTargets={adjustedTargets} />
     </SlideLayout>
   );
 }
