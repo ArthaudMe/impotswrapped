@@ -154,6 +154,32 @@ const translations = {
   "comp.defense": { fr: "baguettes tradition", en: "baguettes" },
   "comp.dette": { fr: "cafes en terrasse", en: "cafe coffees" },
   "comp.autres-investissement": { fr: "tickets de metro", en: "metro tickets" },
+
+  // Preference mode
+  "mode.classic": { fr: "Classique", en: "Classic" },
+  "mode.preference": { fr: "Préférences", en: "Preferences" },
+  "mode.select.label": { fr: "Mode de calcul", en: "Calculation mode" },
+  "mode.classic.heading": { fr: "Vue traditionnelle", en: "Traditional view" },
+  "mode.classic.subheading": { fr: "Comparez vos impots réels à la moyenne nationale", en: "Compare your actual taxes to the national average" },
+  "mode.preference.heading": { fr: "Vue par préférences", en: "Preferences view" },
+  "mode.preference.subheading": { fr: "Vos préférences ajustées vs réalité", en: "Your adjusted preferences vs reality" },
+
+  // Preference form
+  "pref.heading": { fr: "Répartition souhaitée", en: "Desired allocation" },
+  "pref.helper": { fr: "Glissez pour définir vos préférences", en: "Slide to set your preferences" },
+  "pref.sliderLabel": { fr: "Pourcentage souhaité", en: "Desired percentage" },
+  "pref.totalLabel": { fr: "Total", en: "Total" },
+
+  // Validation
+  "pref.totalError": { fr: "Le total doit être égal à 100 %", en: "Total must equal 100%" },
+
+  // Deviation comparison
+  "pref.compare.actual": { fr: "Réel", en: "Actual" },
+  "pref.compare.adjusted": { fr: "Préférence ajustée", en: "Adjusted preference" },
+  "pref.compare.delta": { fr: "Écart", en: "Deviation" },
+  "pref.delta.moreThanYouPrefer": { fr: "{delta}% de plus que vous ne préférez", en: "{delta}% more than you prefer" },
+  "pref.delta.lessThanYouPrefer": { fr: "{delta}% de moins que vous ne préférez", en: "{delta}% less than you prefer" },
+  "pref.delta.neutral": { fr: "Conforme", en: "On track" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
